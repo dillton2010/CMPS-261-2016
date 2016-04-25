@@ -1,78 +1,188 @@
-// Graphs.cpp : Defines the entry point for the console application.
-//
-
-#include "stdafx.h"
+#include <queue>
 #include <vector>
+#include <stack>
+#include <cstdlib>
+#include <cmath>
+#include <ctime>
 #include <iostream>
+#include <fstream>
+#include <iomanip>
+#include <string>
+#include "Graphs.h"
+using namespace std;
 
-class Edge
+Graphs::Graphs()
 {
-public:
-	Edge(int f, int t, int w)
-	{
-		from = f;
-		to = t;
-		weight = w;
-	}
-
-	int from;
-	int to;
-	int weight;
-
-};
-class Node
-{
-private:
-	int id;
-	std::vector<Node> children;
-	std::vector<Edge> adjacents;
-public:
-	Node(int n)
-	{
-		id = n;
-	}
-	void Info();
-	void Add(Node &n, int w);
-	
-};
-
-
-int main()
-{
-	//reading from file
-	//read data "0 1 187"
-	//str data = "0 1 187"
-	//Node n(data[0])
-	//n.Add(data[2], data[4])
-	//what about data[4]?
-	std::string data1 = "0 1 187";
-	std::string data2 = "0 2 212";
-	Edge e1(data1[0], data1[2], data1[4]);
-	Edge e2(data2[0], data2[2], data2[4]);
-	std::vector<Edge> edgeList;
-	edgeList.push_back(e1);
-	edgeList.push_back(e2);
-	for (int i = 0; i < edgeList.size(); i++)
-	{
-		int nodeid = edgeList[i].from;
-	}
-	
-	system("Pause");
-    return 0;
+    
+    create();
+    
 }
 
-void Node::Info()
+void Graphs::create()
 {
-	std::cout << "Number of children: " << children.size() << std::endl;
-	for (int i = 0; i < children.size(); i++)
+     
+    int z = 0;
+    int y = 0;
+    ifstream infile;
+    infile.open("graph.data");
+        
+    infile >> verts;  
+        while (!infile.eof())//make the edge list
 	{
-		std::cout << "child #" <<children.at(i).id << std::endl;
+           Edge a;
+           
+            infile >> a.firstPoint;
+            infile >> a.secondPoint;
+            infile>> a.weight;
+            edges.push_back(a);
+            z++;            
 	}
-
+   
+    
+    for(int i =0;i<edges.size();i++)// make the Node list
+    {
+        Node begin;
+        begin.id = edges[i].firstPoint;
+        begin.visited = false;
+        bool correct = true;
+        if(list.size() == 0)
+        {
+            list.push_back(begin);
+        }
+        for(int k =0;k<list.size();k++)
+        {
+            if(begin.id == list[k].id)
+            {
+                correct = false;
+            }
+        }
+        if(correct == true)
+        {
+            list.push_back(begin);
+        }  
+    }
+    
+    int l =0;
+    for(int z = 0; z<list.size();z++)// put children
+    {
+        Node check;
+        check = list[z];
+        for(int y = 0; y<edges.size();y++)
+        {
+            if(edges[y].secondPoint == check.id)
+            {
+                l = edges[y].firstPoint;
+            }
+            for(int i = 0;i<list.size();i++)
+            {
+                if(list[i].id == l)
+                { 
+                    check.Children.push_back(list[i]);
+                }
+            }
+        }
+    }
 }
 
-void Node::Add(Node &n, int w)
+
+
+
+
+
+Node Graphs::getChild(Node B,int i)
 {
-	
-	this->children.push_back(n);
+    Node A;
+    A =  B.Children[i];
+    return A;
+    
 }
+
+Node Graphs::getNode(Node B)
+{
+    return B;
+}
+//void Graphs::prims()
+//{
+    
+    
+//}
+
+
+
+void Graphs:: bfs() // logic seems correct 
+{ 
+    
+    
+    Node A;
+    Node child;
+    
+    Node begin;
+    begin = list[0];
+    queue <Node> Queue;
+    Queue.push(begin);    
+    if(!Queue.empty())
+    {
+        while(!Queue.empty())
+        {
+            begin = Queue.front();
+            for(int i = 0;i<begin.Children.size();i++)
+            {
+                child = getChild(begin,i);
+                if(child.visited == false)
+                {
+                    Queue.push(child);
+                }
+            }
+             cout<<Queue.front().id<<endl;
+             begin.visited == true;
+            Queue.pop();
+        }
+    }
+     
+}
+
+
+/* 
+void Graphs:: dfs() 
+{
+    stack<Node> Stack;
+    Node begin;
+    begin = list[0];
+    while(!Stack.empty())
+    {
+        Node top = Stack.top();
+        cout<<top.id<<endl;
+        Stack.pop();
+        top.visited = true;
+        for(int i = 0; i<list.size();i++)
+        {
+            if(list[i].visited == false)
+            {
+                Stack.push(list[i]);
+            }
+        }
+        
+    }
+      
+}
+ /*
+    void Graphs::prims()
+    {
+        Node begin;
+        Node begin = list[0];
+        vector<Edge>edgeList;
+        vector<Node>nodeList;
+        nodeList[0] = begin;
+        for(int i = 0;i<edges.size();i++)
+        {
+            begin = nodeList[0];
+            if()
+        }
+        
+    }    
+
+void Graphs::djikstra()
+{
+    
+}
+  */
