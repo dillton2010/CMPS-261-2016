@@ -13,113 +13,113 @@ using namespace std;
 
 Graphs::Graphs()
 {
-    
-    create();
-    
-}
-
-void Graphs::create()
-{
-     
     int z = 0;
     int y = 0;
+    
     ifstream infile;
     infile.open("graph.data");
-        
     infile >> verts;  
         while (!infile.eof())//make the edge list
 	{
-           Edge a;
+           Data a;
            
-            infile >> a.firstPoint;
-            infile >> a.secondPoint;
-            infile>> a.weight;
-            edges.push_back(a);
+            infile >> a.from;
+            infile >> a.to;
+            infile>> a.cost;
+            DataList.push_back(a);
             z++;            
 	}
-   
     
-    for(int i =0;i<edges.size();i++)// make the Node list
+    createNodeList();
+   // createEdgeList();
+}
+
+void Graphs::createNodeList()
+{
+    vector<Node>List;
+    for(int i =0;i<DataList.size();i++)// make the Node list
     {
         Node begin;
-        begin.id = edges[i].firstPoint;
+        begin.id = DataList[i].from;
         begin.visited = false;
         bool correct = true;
-        if(list.size() == 0)
+        if(List.size() == 0)
         {
-            list.push_back(begin);
+            List.push_back(begin);
         }
-        for(int k =0;k<list.size();k++)
+        for(int k =0;k<List.size();k++)
         {
-            if(begin.id == list[k].id)
+            if(begin.id == List[k].id)
             {
                 correct = false;
             }
         }
         if(correct == true)
         {
-            list.push_back(begin);
+            List.push_back(begin);
         }  
     }
     
-    int l =0;
-    for(int z = 0; z<list.size();z++)// put children
+    for(int z = 0; z<List.size();z++)// put children in correct place
     {
         Node check;
-        check = list[z];
-        for(int y = 0; y<edges.size();y++)
+        check = List[z];
+        for(int y = 0; y<DataList.size();y++)
         {
-            if(edges[y].secondPoint == check.id)
+            if(DataList[y].to == check.id)
             {
-                l = edges[y].firstPoint;
-            }
-            for(int i = 0;i<list.size();i++)
-            {
-                if(list[i].id == l)
-                { 
-                    check.Children.push_back(list[i]);
+                for(int i = 0;i<List.size();i++)
+                {
+                    if(List[i].id == DataList[y].from)
+                    {
+                        check.Children.push_back(&List[i]);
+                    }
                 }
             }
+            
         }
+        NodeList.push_back(check);
     }
-}
-
-
-
-
-
-
-Node Graphs::getChild(Node B,int i)
-{
-    Node A;
-    A =  B.Children[i];
-    return A;
-    
-}
-
-Node Graphs::getNode(Node B)
-{
-    return B;
-}
-//void Graphs::prims()
-//{
+    List.clear();
     
     
-//}
-
-
-
-void Graphs:: bfs() // logic seems correct 
-{ 
     
     
-    Node A;
-    Node child;
+    //CreateEdgeList needs to get stuff by ref
     
+    for(int i=0;i<DataList.size();i++)
+    {
+        Edge start;
+        int s, e , w;
+        s = DataList[i].from;
+        e = DataList[i].to;
+        w = DataList[i].cost;
+      
+        for(int k=0;k<NodeList.size();k++)
+        {
+            if(s == NodeList[k].id)
+            {
+                start.firstPoint = NodeList[k];
+            }
+            if(e == NodeList[k].id)
+            {
+                start.secondPoint = NodeList[k];
+            }
+        }
+        start.weight = w;
+        EdgeList.push_back(start);
+    }
+    
+    
+    
+      //bsf function----- only going through one iteration;
     Node begin;
-    begin = list[0];
+   Node child;
+   
+    begin = NodeList[4];
     queue <Node> Queue;
-    Queue.push(begin);    
+    Queue.push(begin);  
+   
     if(!Queue.empty())
     {
         while(!Queue.empty())
@@ -127,60 +127,219 @@ void Graphs:: bfs() // logic seems correct
             begin = Queue.front();
             for(int i = 0;i<begin.Children.size();i++)
             {
-                child = getChild(begin,i);
+                child = getChild(begin,i);//causes segfault but only if in its own fucntion
+                
                 if(child.visited == false)
-                {
+                {   
                     Queue.push(child);
                 }
             }
-             cout<<Queue.front().id<<endl;
              begin.visited == true;
+             cout<<begin.id<<endl;
+            Queue.pop();
+        }
+    }
+     
+    
+}
+/*
+void Graphs::createEdgeList() 
+{  
+    
+    for(int i=0;i<DataList.size();i++)
+    {
+        Edge start;
+        int s, e , w;
+        s = DataList[i].from;
+        e = DataList[i].to;
+        w = DataList[i].cost;
+      
+        for(int k=0;k<NodeList.size();k++)
+        {
+            if(s == NodeList[k].id)
+            {
+                start.firstPoint = NodeList[k];
+            }
+            if(e == NodeList[k].id)
+            {
+                start.secondPoint = NodeList[k];
+            }
+        }
+        start.weight = w;
+        EdgeList.push_back(start);
+    }
+    Node B = NodeList[0];
+    cout<<B.Children[0]->id;
+}
+*/
+Node Graphs::getChild(Node B,int i)
+{
+    Node *A;
+    Node C;
+    A =  B.Children[i];
+    C = *A;
+    return C;
+    
+}
+Edge Graphs:: findSmallest(vector <Edge>&cost)
+{
+    vector <Edge>Cost = cost;
+    Edge smallest;
+    smallest = Cost[0];
+    for(int i =1;i<Cost.size();i++)
+    {
+        if(Cost[0].weight < smallest.weight)
+        {
+            smallest = Cost[0];
+        }
+    }
+    
+    return smallest;
+}
+
+void Graphs:: bfs() // logic seems correct 
+{ 
+    
+   Node begin;
+   Node child;
+   
+    begin = NodeList[0];
+    queue <Node> Queue;
+    Queue.push(begin);  
+   
+    if(!Queue.empty())
+    {
+        while(!Queue.empty())
+        {
+            begin = Queue.front();
+            for(int i = 0;i<begin.Children.size();i++)
+            {
+                child = getChild(begin,i);//causes segfault
+                
+                if(child.visited == false)
+                {   child.visited = true;
+                    Queue.push(child);
+                }
+            }
+             begin.visited == true;
+             cout<<begin.id;
             Queue.pop();
         }
     }
      
 }
 
+Node Graphs::pickChild(Node B)
+{
+    Node A = B;
+    int numChild = A.Children.size();
+    int random = rand() % numChild;
+    bool allVisited = false;
+    if(numChild == 0)
+    {
+        exit;
+    }
+    for(int i =0;i<numChild;i++)
+    {
+        if(A.Children[i]->visited == false)
+        {
+            allVisited == false;
+        }
+        else
+            allVisited = true;
+    }
+    if(allVisited == true)
+    {
+        exit;
+    }
+    if(A.Children[random]->visited!= false)
+    {
+        
+        return A;
+    }
+    else 
+        pickChild(A);
+}
 
-/* 
 void Graphs:: dfs() 
 {
-    stack<Node> Stack;
+    stack <Node> Stack;
     Node begin;
-    begin = list[0];
+    begin = NodeList[0];
+    Node *Child;
+    bool allVisited;
+    allVisited = false;
+    begin.visited = true;
+    Stack.push(begin);
+    
     while(!Stack.empty())
     {
-        Node top = Stack.top();
-        cout<<top.id<<endl;
-        Stack.pop();
-        top.visited = true;
-        for(int i = 0; i<list.size();i++)
+        begin = Stack.top();
+        for(int i = 0;i<begin.Children.size();i++)
         {
-            if(list[i].visited == false)
+            if(begin.Children[i]->visited == false)
             {
-                Stack.push(list[i]);
+                allVisited = false;     
+            }
+            else
+                allVisited = true;       
+        }
+        if(begin.Children.size()!=0 && allVisited == false)
+        {
+            *Child = pickChild(begin);// causes seg fault
+            Node kid;
+            kid = *Child;
+            kid.visited = true;
+            Stack.push(kid);
+        }
+        if(begin.Children.size()== 0)
+        {
+            cout<<Stack.top().id<<endl;;
+            Stack.pop();
+        }
+    }
+}
+/*
+void Graphs::prims()//FIX IT!!!!!!!
+{
+    vector<Edge>MST;
+    vector<Edge>cost(EdgeList);
+    for(int z = 0; z<cost.size();z++)
+    {
+        cost[z].weight = 32767; 
+    }
+    Node begin;
+    begin = NodeList[0];
+    begin.visited = true;
+    for(int i = 0;i<cost.size();i++)
+        {
+            if(cost[i].firstPoint == begin && begin.visited)
+            {
+                cost[i].weight == EdgeList[i].weight;
+            } 
+        }
+    for(int k = 0;k<NodeList.size();k++)
+    {
+        Edge smallest;
+        smallest = findSmallest(cost);
+        for(int l = 0;l<NodeList.size();l++)
+        {
+            if(smallest.secondPoint == NodeList[l])
+            {
+                begin = NodeList[l];
             }
         }
+        for(int i = 0;i<cost.size();i++)
+        {
+            if(cost[i].firstPoint == begin && begin.visited == false)
+            {
+                cost[i].weight == EdgeList[i].weight;
+            } 
+        }
+        begin.visited = true;
         
     }
-      
 }
- /*
-    void Graphs::prims()
-    {
-        Node begin;
-        Node begin = list[0];
-        vector<Edge>edgeList;
-        vector<Node>nodeList;
-        nodeList[0] = begin;
-        for(int i = 0;i<edges.size();i++)
-        {
-            begin = nodeList[0];
-            if()
-        }
-        
-    }    
-
 void Graphs::djikstra()
 {
     

@@ -24,43 +24,51 @@ using namespace std;
 
 
 
-struct Edge
+struct Data
 {
 public:
-    int firstPoint;
-    int secondPoint;
-    int weight; 
-    
+    int from;
+    int to;
+    int cost;
 };
 struct  Node
 {
 public:
     int id;
-   vector <Node> Children;
+    
+   vector <Node*> Children;
    bool visited;
     
 };
-
+struct Edge
+{
+public:
+    Node firstPoint;
+    Node secondPoint;
+    int weight; 
+    
+};
 class Graphs
 {
   
 public:
     Graphs();
+    void createNodeList();
+    void createEdgeList();
     void bfs();
     void dfs();
     Node getChild(Node B, int i);
     Node getNode(Node B);
     void djikstra();
     void prims();
-    void create();
+    Node pickChild(Node B);
+    Edge findSmallest(vector <Edge>&cost);
 private:
-    vector<Edge>edges;
+    vector<Edge>EdgeList;
     int verts;
-    vector<Node> list;
- 
-   
+    vector <Node> NodeList;
+    vector <Data> DataList;
 };
 
-
-
 #endif	/* GRAPHS_H */
+
